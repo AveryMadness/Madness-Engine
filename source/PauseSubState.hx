@@ -14,12 +14,13 @@ import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.FlxCamera;
 
+
 class PauseSubState extends MusicBeatSubstate
 {
 	var grpMenuShit:FlxTypedGroup<Alphabet>;
 
 	var menuItems:Array<String> = [];
-	var menuItemsOG:Array<String> = ['Resume', 'Restart Song', 'Change Difficulty', 'Exit to menu'];
+	var menuItemsOG:Array<String> = ['Resume', 'Toggle Practice Mode', 'Restart Song', 'Change Difficulty', 'Exit to menu'];
 	var difficultyChoices = [];
 	var curSelected:Int = 0;
 
@@ -34,7 +35,6 @@ class PauseSubState extends MusicBeatSubstate
 
 		if(PlayState.chartingMode)
 		{
-			menuItemsOG.insert(2, 'Toggle Practice Mode');
 			menuItemsOG.insert(3, 'Toggle Botplay');
 		}
 		menuItems = menuItemsOG;
@@ -188,7 +188,7 @@ class PauseSubState extends MusicBeatSubstate
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;
-
+	
 				case 'BACK':
 					menuItems = menuItemsOG;
 					regenMenu();
