@@ -101,6 +101,9 @@ class PlayState extends MusicBeatState
 	public var GF_X:Float = 400;
 	public var GF_Y:Float = 130;
 
+
+	public var permamaxmisses:Int = -1;
+
 	public var songSpeedTween:FlxTween;
 	public var songSpeed(default, set):Float = 1;
 	public var songSpeedType:String = "multiplicative";
@@ -116,6 +119,8 @@ class PlayState extends MusicBeatState
 	public static var storyWeek:Int = 0;
 	public static var storyPlaylist:Array<String> = [];
 	public static var storyDifficulty:Int = 1;
+	
+
 
 	public var vocals:FlxSound;
 
@@ -129,6 +134,7 @@ class PlayState extends MusicBeatState
 
 	private var strumLine:FlxSprite;
 
+	public static var tempmaxmisses:Int = 0;
 	//Handles the new epic mega sexy cam code that i've done
 	private var camFollow:FlxPoint;
 	private var camFollowPos:FlxObject;
@@ -158,7 +164,10 @@ class PlayState extends MusicBeatState
 	public var goods:Int = 0;
 	public var bads:Int = 0;
 	public var shits:Int = 0;
-	
+	public var highcombo:Int = 0;
+
+
+		
 	private var generatedMusic:Bool = false;
 	public var endingSong:Bool = false;
 	private var startingSong:Bool = false;
@@ -172,9 +181,12 @@ class PlayState extends MusicBeatState
 	public var instakillOnMiss:Bool = false;
 	public var cpuControlled:Bool = false;
 	public var practiceMode:Bool = false;
+	public var maxmisses:Int = 10;
+	public var maxmissesenabled:Bool = false;
 
 	public var botplaySine:Float = 0;
 	public var botplayTxt:FlxText;
+	public var noteTxt:FlxText;
 
 	public var iconP1:HealthIcon;
 	public var iconP2:HealthIcon;
@@ -1004,6 +1016,56 @@ class PlayState extends MusicBeatState
 		scoreTxt.borderSize = 1.25;
 		scoreTxt.visible = !ClientPrefs.hideHud;
 		add(scoreTxt);
+		
+		if (curSong == 'Tutorial' || curStage == 'school' ){
+			noteTxt = new FlxText(0, FlxG.height/2-60, FlxG.width, "", 20);
+			noteTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			noteTxt.scrollFactor.set();
+			noteTxt.borderSize = 1.25;
+			noteTxt.visible = !ClientPrefs.hideHud;
+			noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			add(noteTxt);
+		}
+		else if (curStage == 'spooky' || curStage == 'mallEvil')
+			{
+			noteTxt = new FlxText(50, FlxG.height/2-60, FlxG.width, "", 20);
+			noteTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			noteTxt.scrollFactor.set();
+			noteTxt.borderSize = 1.25;
+			noteTxt.visible = !ClientPrefs.hideHud;
+			noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			add(noteTxt);
+			}
+		else if (curStage == 'philly')
+			{
+				noteTxt = new FlxText(50, FlxG.height/2-60, FlxG.width, "", 20);
+				noteTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+				noteTxt.scrollFactor.set();
+				noteTxt.borderSize = 1.25;
+				noteTxt.visible = !ClientPrefs.hideHud;
+				noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
+				add(noteTxt);
+			}
+		else if (curStage == 'mall')
+			{
+				noteTxt = new FlxText(-125, FlxG.height/2-60, FlxG.width, "", 20);
+				noteTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+				noteTxt.scrollFactor.set();
+				noteTxt.borderSize = 1.25;
+				noteTxt.visible = !ClientPrefs.hideHud;
+				noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
+				add(noteTxt);
+			}
+		else
+			{
+			noteTxt = new FlxText(-50, FlxG.height/2-60, FlxG.width, "", 20);
+			noteTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			noteTxt.scrollFactor.set();
+			noteTxt.borderSize = 1.25;
+			noteTxt.visible = !ClientPrefs.hideHud;
+			noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			add(noteTxt);
+			}
 
 		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1683,6 +1745,16 @@ class PlayState extends MusicBeatState
 				songSpeed = ClientPrefs.getGameplaySetting('scrollspeed', 1);
 		}
 		
+		maxmissesenabled = ClientPrefs.getGameplaySetting('maxmissesbool', false);
+
+		if(maxmissesenabled){
+			maxmisses = ClientPrefs.getGameplaySetting('maxmisses', 1);
+		}
+		else{
+			maxmisses = permamaxmisses;
+		}
+	
+
 		var songData = SONG;
 		Conductor.changeBPM(songData.bpm);
 		
@@ -2212,9 +2284,22 @@ class PlayState extends MusicBeatState
 		super.update(elapsed);
 
 		if(ratingName == '?') {
-			scoreTxt.text = 'Score: ' + songScore + ' | Misses: ' + songMisses + ' | Rating: ' + ratingName;
+			scoreTxt.text = 'Score: ' + songScore + ' | Rating: ' + ratingName;
 		} else {
-			scoreTxt.text = 'Score: ' + songScore + ' | Misses: ' + songMisses + ' | Rating: ' + ratingName + ' (' + Highscore.floorDecimal(ratingPercent * 100, 2) + '%)' + ' - ' + ratingFC;//peeps wanted no integer rating
+			scoreTxt.text = 'Score: ' + songScore + ' | Rating: ' + ratingName + ' (' + Highscore.floorDecimal(ratingPercent * 100, 2) + '%)' + ' - ' + ratingFC;//peeps wanted no integer rating
+		}
+
+		if(maxmisses == 0){
+			vocals.volume = 0;
+			doDeathCheck(true);
+		}
+
+		if(noteTxt.visible) {
+			noteTxt.text = 'Highest Combo: ' + highcombo + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+		}
+
+		if(maxmisses > 0  && noteTxt.visible){
+			noteTxt.text = 'Misses Remaining: ' + maxmisses + '\nHighest Combo: ' + highcombo + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
 		}
 
 		if(botplayTxt.visible) {
@@ -2551,6 +2636,7 @@ class PlayState extends MusicBeatState
 		callOnLuas('onUpdatePost', [elapsed]);
 	}
 
+
 	function openChartEditor()
 	{
 		persistentUpdate = false;
@@ -2566,7 +2652,7 @@ class PlayState extends MusicBeatState
 
 	public var isDead:Bool = false; //Don't mess with this on Lua!!!
 	function doDeathCheck(?skipHealthCheck:Bool = false) {
-		if (((skipHealthCheck && instakillOnMiss) || health <= 0) && !practiceMode && !isDead)
+		if (((skipHealthCheck && instakillOnMiss) || health <= 0 || maxmisses == 0) && !practiceMode && !isDead)
 		{
 			var ret:Dynamic = callOnLuas('onGameOver', []);
 			if(ret != FunkinLua.Function_Stop) {
@@ -3287,9 +3373,11 @@ class PlayState extends MusicBeatState
 				totalNotesHit += 0.75;
 				score = 200;
 				goods++;
+				highcombo++;
 			case "sick": // sick
 				totalNotesHit += 1;
 				sicks++;
+
 		}
 
 
@@ -3646,6 +3734,11 @@ class PlayState extends MusicBeatState
 		});
 		combo = 0;
 
+		if(maxmisses > -1){
+			maxmisses -= 1;
+		}
+
+
 		health -= daNote.missHealth * healthLoss;
 		if(instakillOnMiss)
 		{
@@ -3809,6 +3902,7 @@ class PlayState extends MusicBeatState
 				combo += 1;
 				popUpScore(note);
 				if(combo > 9999) combo = 9999;
+				if(highcombo < combo) highcombo = combo;
 			}
 			health += note.hitHealth * healthGain;
 

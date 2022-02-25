@@ -82,6 +82,17 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		option.displayFormat = '%vX';
 		optionsArray.push(option);
 
+		var option:GameplayOption = new GameplayOption('Max Misses Enabled', 'maxmissesbool', 'bool', false);
+		optionsArray.push(option);
+
+		var option:GameplayOption = new GameplayOption('Max Misses', 'maxmisses', 'int', 1);
+		option.scrollSpeed = 2.5;
+		option.minValue = -1;
+		option.maxValue = 1000;
+		option.changeValue = 1;
+		option.displayFormat = '%v';
+		optionsArray.push(option);
+
 		var option:GameplayOption = new GameplayOption('Instakill on Miss', 'instakill', 'bool', false);
 		optionsArray.push(option);
 
@@ -90,6 +101,9 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 		var option:GameplayOption = new GameplayOption('Botplay', 'botplay', 'bool', false);
 		optionsArray.push(option);
+
+
+		
 	}
 
 	public function getOptionByName(name:String)
@@ -499,4 +513,6 @@ class GameplayOption
 		type = newValue;
 		return type;
 	}
+
+
 }
