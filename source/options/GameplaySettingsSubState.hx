@@ -1,5 +1,6 @@
 package options;
 
+import lime.net.oauth.OAuthToken.OAuth1AccessToken;
 #if desktop
 import Discord.DiscordClient;
 #end
@@ -61,6 +62,13 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			'ghostTapping',
 			'bool',
 			true);
+		addOption(option);
+
+		var option:Option = new Option('Hit Sounds',
+		"If checked, upon hitting a note, a sound will play.",
+		'hitsound',
+		'bool',
+		false);
 		addOption(option);
 
 		var option:Option = new Option('Disable Reset Button',
