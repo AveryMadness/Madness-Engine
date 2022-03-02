@@ -119,6 +119,7 @@ class PlayState extends MusicBeatState
 	public static var storyWeek:Int = 0;
 	public static var storyPlaylist:Array<String> = [];
 	public static var storyDifficulty:Int = 1;
+	var startTimer2:FlxTimer;
 	
 
 
@@ -187,6 +188,7 @@ class PlayState extends MusicBeatState
 	public var botplaySine:Float = 0;
 	public var botplayTxt:FlxText;
 	public var noteTxt:FlxText;
+	public var maxmissesTxt:FlxText;
 
 	public var iconP1:HealthIcon;
 	public var iconP2:HealthIcon;
@@ -275,6 +277,29 @@ class PlayState extends MusicBeatState
 	
 	// Less laggy controls
 	private var keysArray:Array<Dynamic>;
+	public var FMMABool:Bool = true;
+
+	public function setMaxMissesVisiblilty(visibility:Bool)
+		{
+			if (maxmissesenabled){
+				maxmissesTxt.visible = visibility;
+			}
+		}
+	
+	public function flashMaxMissesAmount()
+		{
+
+			startTimer2 = new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
+				{
+					setMaxMissesVisiblilty(FMMABool);
+					if(FMMABool){
+						FMMABool = false;
+					}
+					else if(!FMMABool){
+						FMMABool = true;
+					}
+				}, 6);
+		}
 
 	override public function create()
 	{
@@ -1036,7 +1061,7 @@ class PlayState extends MusicBeatState
 			noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
 			add(noteTxt);
 			}
-		else if (curStage == 'philly')
+		else if (curStage == 'philly' || curStage == 'philly2' || curStage == 'philly3')
 			{
 				noteTxt = new FlxText(50, FlxG.height/2-60, FlxG.width, "", 20);
 				noteTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1066,6 +1091,16 @@ class PlayState extends MusicBeatState
 			noteTxt.text = 'Sicks: ' + sicks + '\nGoods: ' + goods + '\nShits: ' + shits + "\nMisses: " + songMisses;
 			add(noteTxt);
 			}
+
+		maxmissesTxt = new FlxText(0, FlxG.height/2-60, FlxG.width, "", 30);
+		maxmissesTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		maxmissesTxt.scrollFactor.set();
+		maxmissesTxt.borderSize = 1.25;
+		maxmissesTxt.visible = false;
+		maxmissesTxt.size = 75;
+		maxmissesTxt.text = 'Max Misses: ' + maxmisses;
+		add(maxmissesTxt);
+			
 
 		botplayTxt = new FlxText(400, timeBarBG.y + 55, FlxG.width - 800, "BOTPLAY", 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1585,12 +1620,16 @@ class PlayState extends MusicBeatState
 				var introAssets:Map<String, Array<String>> = new Map<String, Array<String>>();
 				introAssets.set('default', ['ready', 'set', 'go']);
 				introAssets.set('pixel', ['pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel']);
+				introAssets.set('none', ['blank', 'blank', 'blank']);
 
 				var introAlts:Array<String> = introAssets.get('default');
 				var antialias:Bool = ClientPrefs.globalAntialiasing;
 				if(isPixelStage) {
 					introAlts = introAssets.get('pixel');
 					antialias = false;
+				}
+				else if (maxmisses > 0){
+					introAlts = introAssets.get('none');
 				}
 
 				// head bopping for bg characters on Mall
@@ -1606,10 +1645,12 @@ class PlayState extends MusicBeatState
 				{
 					case 0:
 						FlxG.sound.play(Paths.sound('intro3' + introSoundsSuffix), 0.6);
+						setMaxMissesVisiblilty(true);
 					case 1:
 						countdownReady = new FlxSprite().loadGraphic(Paths.image(introAlts[0]));
 						countdownReady.scrollFactor.set();
 						countdownReady.updateHitbox();
+					
 
 						if (PlayState.isPixelStage)
 							countdownReady.setGraphicSize(Std.int(countdownReady.width * daPixelZoom));
@@ -1626,6 +1667,7 @@ class PlayState extends MusicBeatState
 							}
 						});
 						FlxG.sound.play(Paths.sound('intro2' + introSoundsSuffix), 0.6);
+						setMaxMissesVisiblilty(false);
 					case 2:
 						countdownSet = new FlxSprite().loadGraphic(Paths.image(introAlts[1]));
 						countdownSet.scrollFactor.set();
@@ -1645,6 +1687,7 @@ class PlayState extends MusicBeatState
 							}
 						});
 						FlxG.sound.play(Paths.sound('intro1' + introSoundsSuffix), 0.6);
+						setMaxMissesVisiblilty(true);
 					case 3:
 						if (!skipCountdown){
 						countdownGo = new FlxSprite().loadGraphic(Paths.image(introAlts[2]));
@@ -1667,8 +1710,8 @@ class PlayState extends MusicBeatState
 							}
 						});
 						FlxG.sound.play(Paths.sound('introGo' + introSoundsSuffix), 0.6);
+						setMaxMissesVisiblilty(false);
 						}
-					case 4:
 				}
 
 				notes.forEachAlive(function(note:Note) {
@@ -1913,7 +1956,9 @@ class PlayState extends MusicBeatState
 		}
 		checkEventNote();
 		generatedMusic = true;
-	}
+	
+
+}
 
 	function eventPushed(event:EventNote) {
 		switch(event.event) {
@@ -2294,12 +2339,29 @@ class PlayState extends MusicBeatState
 			doDeathCheck(true);
 		}
 
+		switch(curBeat){
+			case 1:
+				maxmissesTxt.visible = false;
+		}
+
+
+
 		if(noteTxt.visible) {
-			noteTxt.text = 'Highest Combo: ' + highcombo + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			if(ratingFC == ''){
+					noteTxt.text = 'Highest Combo: ' + highcombo + " " + ratingFC + '' + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			}
+			else {
+				noteTxt.text = 'Highest Combo: ' + highcombo + " (" + ratingFC + ')' + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			}
 		}
 
 		if(maxmisses > 0  && noteTxt.visible){
-			noteTxt.text = 'Misses Remaining: ' + maxmisses + '\nHighest Combo: ' + highcombo + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			if(ratingFC == ''){
+				noteTxt.text = 'Misses Remaining: ' + maxmisses + '\nHighest Combo: ' + highcombo + " " + ratingFC + '' + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			}
+			else {
+				noteTxt.text = 'Misses Remaining: ' + maxmisses + '\nHighest Combo: ' + highcombo + " (" + ratingFC + ')' + '\nSicks: ' + sicks + '\nGoods: ' + goods + '\nBads: ' + bads + '\nShits: ' + shits + "\nMisses: " + songMisses;
+			}
 		}
 
 		if(botplayTxt.visible) {
@@ -2339,6 +2401,10 @@ class PlayState extends MusicBeatState
 		if (FlxG.keys.anyJustPressed(debugKeysChart) && !endingSong && !inCutscene)
 		{
 			openChartEditor();
+		}
+
+		if(FlxG.keys.justPressed.Q){
+			flashMaxMissesAmount();
 		}
 
 		// FlxG.watch.addQuick('VOL', vocals.amplitudeLeft);
@@ -3373,10 +3439,11 @@ class PlayState extends MusicBeatState
 				totalNotesHit += 0.75;
 				score = 200;
 				goods++;
-				highcombo++;
+				if(combo > highcombo) highcombo = combo;
 			case "sick": // sick
 				totalNotesHit += 1;
 				sicks++;
+				if(combo > highcombo) highcombo = combo;
 
 		}
 
@@ -3902,7 +3969,11 @@ class PlayState extends MusicBeatState
 				combo += 1;
 				popUpScore(note);
 				if(combo > 9999) combo = 9999;
-				if(highcombo < combo) highcombo = combo;
+				if(combo > highcombo) highcombo = combo;
+				if(ClientPrefs.hitsound){
+					FlxG.sound.play(Paths.sound('Hitsound'));
+				}
+
 			}
 			health += note.hitHealth * healthGain;
 
@@ -3924,6 +3995,7 @@ class PlayState extends MusicBeatState
 					//	if(boyfriend.animation.getByName(anim) == null)anim = animToPlay + daAlt;
 					//	boyfriend.playAnim(anim, true);
 					//	boyfriend.holdTimer = 0;
+
 					//}
 				//}else{
 					if(note.gfNote) {
